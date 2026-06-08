@@ -1,0 +1,622 @@
+-- =============================================================================
+-- solar_sooty — NeoVim 0.11+ colorscheme (Lua)
+-- Ported from the Solar Sooty TMTheme (gerane/VSCodeThemes, Colorsublime)
+-- Maintainer: Borjão (Rafael Borges Dias Baptista)
+-- =============================================================================
+
+local M = {}
+
+local function hi(name, opts)
+    vim.api.nvim_set_hl(0, name, opts)
+end
+
+-- ── Palette ──────────────────────────────────────────────────────────────────
+-- Sourced directly and exhaustively from the TMTheme.
+-- bg is #111 in the canonical Colorsublime copy (= #111111).
+local c = {
+    -- UI base
+    bg           = '#111111',  -- background
+    fg           = '#F8F8F2',  -- foreground
+    caret        = '#F8F8F0',  -- cursor
+    invisibles   = '#3B3A32',  -- whitespace / non-text
+    line_hl      = '#2D2D2D',  -- lineHighlight (cursorline)
+    selection    = '#2B2B2B',  -- selection
+    sel_border   = '#555555',  -- selectionBorder (line numbers etc.)
+    find_hl      = '#FFE792',  -- findHighlight (search)
+    find_hl_fg   = '#000000',  -- findHighlightForeground
+    embedded_bg  = '#131313',  -- embedded source background
+
+    -- Syntax tokens (all from TMTheme)
+    comment      = '#999999',  -- comment
+    string       = '#F3E87E',  -- string
+    number       = '#AE81FF',  -- constant.numeric / constant.language / constant.other
+    --                            also bracketsForeground (parens, brackets, braces)
+    variable     = '#678CB1',  -- variable
+    keyword      = '#EC7600',  -- keyword / storage
+    storage_type = '#66D9EF',  -- storage.type (italic)
+    func_name    = '#A6E22E',  -- entity.name.function / entity.name.class / entity.other.attribute-name
+    func_param   = '#FD971F',  -- variable.parameter (italic)
+    tag_name     = '#FE890C',  -- entity.name.tag
+    lib_func     = '#66D9EF',  -- support.function
+    lib_const    = '#FFFFFF',  -- support.constant
+    -- support.type / support.class also → lib_func (#66D9EF) italic
+    json_str_val = '#CFCFC2',  -- meta.structure.dictionary.json string.quoted.double.json
+
+    -- Diff / markup
+    diff_del     = '#FF4A52',  -- markup.deleted
+    diff_ins     = '#A6E22E',  -- markup.inserted
+    diff_chg     = '#E6DB74',  -- markup.changed
+
+    -- Invalid
+    invalid_bg   = '#EC7600',  -- invalid background
+    invalid_fg   = '#F8F8F0',  -- invalid foreground
+    dep_bg       = '#AE81FF',  -- invalid.deprecated background
+
+    -- Linter (SublimeLinter)
+    lint_note_bg = '#FFFFAA',  -- sublimelinter.notes bg
+    lint_warn_bg = '#FFEF85',  -- sublimelinter.warning bg
+    lint_err_bg  = '#FF4A52',  -- sublimelinter.illegal bg
+    lint_err_ul  = '#FF0000',  -- invalid.illegal underline
+    lint_warn_ul = '#D30000',  -- invalid.warning underline
+}
+
+function M.load()
+    if vim.fn.has('nvim') ~= 1 then
+        vim.notify('[solar_sooty] Requires NeoVim.', vim.log.levels.ERROR)
+        return
+    end
+
+    vim.cmd('highlight clear')
+    if vim.fn.exists('syntax_on') == 1 then
+        vim.cmd('syntax reset')
+    end
+    vim.g.colors_name   = 'solar_sooty'
+    vim.o.termguicolors = true
+
+    -- ── 1. BASE UI ──────────────────────────────────────────────────────────
+
+    hi('Normal',           { fg = c.fg,        bg = c.bg })
+    hi('NormalNC',         { fg = c.fg,        bg = c.bg })
+    hi('NormalFloat',      { fg = c.fg,        bg = c.line_hl })
+    hi('FloatBorder',      { fg = c.sel_border,bg = c.line_hl })
+    hi('FloatTitle',       { fg = c.func_name, bg = c.line_hl, bold = true })
+
+    hi('Cursor',           { fg = c.bg,        bg = c.caret })
+    hi('CursorIM',         { fg = c.bg,        bg = c.caret })
+    hi('TermCursor',       { fg = c.bg,        bg = c.caret })
+
+    hi('CursorLine',       { bg = c.line_hl })
+    hi('CursorColumn',     { bg = c.line_hl })
+    hi('ColorColumn',      { bg = c.line_hl })
+
+    hi('Visual',           { bg = c.selection })
+    hi('VisualNOS',        { bg = c.selection })
+
+    hi('NonText',          { fg = c.invisibles })
+    hi('SpecialKey',       { fg = c.invisibles })
+    hi('Whitespace',       { fg = c.invisibles })
+    hi('EndOfBuffer',      { fg = c.invisibles })
+
+    -- Search (findHighlight)
+    hi('Search',           { fg = c.find_hl_fg, bg = c.find_hl })
+    hi('IncSearch',        { fg = c.find_hl_fg, bg = c.find_hl, bold = true })
+    hi('CurSearch',        { fg = c.find_hl_fg, bg = c.find_hl, bold = true })
+    hi('Substitute',       { fg = c.find_hl_fg, bg = c.find_hl })
+
+    -- Gutter
+    hi('LineNr',           { fg = c.sel_border })
+    hi('LineNrAbove',      { fg = c.sel_border })
+    hi('LineNrBelow',      { fg = c.sel_border })
+    hi('CursorLineNr',     { fg = c.fg,         bg = c.line_hl, bold = true })
+    hi('SignColumn',       { fg = c.sel_border,  bg = c.bg })
+    hi('FoldColumn',       { fg = c.sel_border,  bg = c.bg })
+    hi('Folded',           { fg = c.comment,     bg = c.line_hl })
+
+    -- Status / tab bar
+    hi('StatusLine',       { fg = c.fg,          bg = c.line_hl })
+    hi('StatusLineNC',     { fg = c.comment,     bg = c.line_hl })
+    hi('TabLine',          { fg = c.comment,     bg = c.line_hl })
+    hi('TabLineSel',       { fg = c.fg,          bg = c.bg,    bold = true })
+    hi('TabLineFill',      { bg = c.bg })
+
+    -- Wild / popup menu
+    hi('WildMenu',         { fg = c.find_hl_fg, bg = c.find_hl, bold = true })
+    hi('Pmenu',            { fg = c.fg,         bg = c.line_hl })
+    hi('PmenuSel',         { fg = c.find_hl_fg, bg = c.find_hl, bold = true })
+    hi('PmenuSbar',        { bg = c.invisibles })
+    hi('PmenuThumb',       { bg = c.sel_border })
+    hi('PmenuMatch',       { fg = c.func_name,  bg = c.line_hl, bold = true })
+    hi('PmenuMatchSel',    { fg = c.func_name,  bg = c.find_hl, bold = true })
+
+    -- Splits
+    hi('VertSplit',        { fg = c.line_hl,    bg = c.bg })
+    hi('WinSeparator',     { fg = c.line_hl,    bg = c.bg })
+
+    -- Messages
+    hi('ModeMsg',          { fg = c.func_name,  bold = true })
+    hi('MoreMsg',          { fg = c.func_name,  bold = true })
+    hi('Question',         { fg = c.func_name,  bold = true })
+    hi('Title',            { fg = c.func_name,  bold = true })
+    hi('WarningMsg',       { fg = c.keyword,    bold = true })
+    hi('ErrorMsg',         { fg = c.caret,      bg = c.diff_del, bold = true })
+
+    -- Matching brackets — bracketsForeground=#AE81FF bracketsOptions=underline
+    hi('MatchParen',       { fg = c.number,     underline = true })
+
+    -- Misc
+    hi('Conceal',          { fg = c.comment })
+    hi('Directory',        { fg = c.lib_func })
+    hi('QuickFixLine',     { bg = c.selection })
+
+    -- Diff
+    hi('DiffAdd',          { fg = c.diff_ins,   bg = c.embedded_bg })
+    hi('DiffDelete',       { fg = c.diff_del,   bg = c.embedded_bg })
+    hi('DiffChange',       { fg = c.diff_chg,   bg = c.embedded_bg })
+    hi('DiffText',         { fg = c.diff_chg,   bg = c.selection, bold = true })
+
+    -- Spelling
+    hi('SpellBad',         { sp = c.diff_del,   undercurl = true })
+    hi('SpellCap',         { sp = c.lib_func,   undercurl = true })
+    hi('SpellLocal',       { sp = c.func_name,  undercurl = true })
+    hi('SpellRare',        { sp = c.number,     undercurl = true })
+
+    -- Quickfix
+    hi('qfLineNr',         { fg = c.number })
+    hi('qfFileName',       { fg = c.lib_func })
+
+    -- ── 2. CORE SYNTAX GROUPS ────────────────────────────────────────────────
+
+    hi('Comment',          { fg = c.comment })
+
+    hi('String',           { fg = c.string })
+    hi('Character',        { fg = c.string })
+
+    hi('Number',           { fg = c.number })
+    hi('Float',            { fg = c.number })
+    hi('Boolean',          { fg = c.number })
+    hi('Constant',         { fg = c.number })
+
+    hi('Identifier',       { fg = c.variable })
+
+    hi('Keyword',          { fg = c.keyword })
+    hi('Statement',        { fg = c.keyword })
+    hi('Conditional',      { fg = c.keyword })
+    hi('Repeat',           { fg = c.keyword })
+    hi('Label',            { fg = c.keyword })
+    hi('Exception',        { fg = c.keyword })
+    hi('Operator',         { fg = c.keyword })
+
+    hi('Type',             { fg = c.storage_type, italic = true })
+    hi('Typedef',          { fg = c.storage_type, italic = true })
+    hi('StorageClass',     { fg = c.storage_type, italic = true })
+    hi('Structure',        { fg = c.storage_type, italic = true })
+
+    hi('Function',         { fg = c.func_name })
+
+    hi('PreProc',          { fg = c.func_name })
+    hi('Include',          { fg = c.keyword })
+    hi('Define',           { fg = c.func_name })
+    hi('Macro',            { fg = c.func_name })
+    hi('PreCondit',        { fg = c.func_name })
+
+    -- variable.parameter → italic #FD971F (SpecialChar)
+    hi('SpecialChar',      { fg = c.func_param, italic = true })
+
+    -- entity.name.tag → #FE890C
+    hi('Tag',              { fg = c.tag_name })
+
+    -- support.function / support.type → #66D9EF
+    hi('Special',          { fg = c.lib_func })
+
+    -- support.constant → #FFFFFF
+    hi('SpecialComment',   { fg = c.lib_const })
+
+    -- CRITICAL: bracketsForeground = #AE81FF (= c.number)
+    -- Parentheses, brackets, braces all get this color with underline option
+    -- In Vim/NeoVim, Delimiter is the group used for punctuation characters
+    hi('Delimiter',        { fg = c.number })
+
+    -- invalid → bg #EC7600 fg #F8F8F0
+    hi('Error',            { fg = c.invalid_fg, bg = c.invalid_bg })
+    -- invalid.deprecated → bg #AE81FF fg #F8F8F0
+    hi('Underlined',       { fg = c.invalid_fg, bg = c.dep_bg, underline = true })
+    hi('Todo',             { fg = c.find_hl_fg, bg = c.find_hl, bold = true })
+
+    -- ── 3. TREESITTER CAPTURES ───────────────────────────────────────────────
+
+    -- Comments
+    hi('@comment',                    { fg = c.comment })
+    hi('@comment.documentation',      { fg = c.comment, italic = true })
+    hi('@comment.error',              { link = 'DiagnosticError' })
+    hi('@comment.warning',            { link = 'DiagnosticWarn' })
+    hi('@comment.todo',               { link = 'Todo' })
+    hi('@comment.note',               { fg = c.lib_const })
+
+    -- Literals
+    hi('@string',                     { fg = c.string })
+    hi('@string.regex',               { fg = c.string })
+    hi('@string.regexp',              { fg = c.string })
+    hi('@string.escape',              { fg = c.func_param, italic = true })
+    hi('@string.special',             { fg = c.func_param })
+    hi('@string.special.symbol',      { fg = c.number })
+    hi('@string.special.url',         { fg = c.lib_func, underline = true })
+    hi('@character',                  { fg = c.string })
+    hi('@character.special',          { fg = c.func_param })
+    hi('@number',                     { fg = c.number })
+    hi('@number.float',               { fg = c.number })
+    hi('@boolean',                    { fg = c.number })
+    hi('@constant',                   { fg = c.number })
+    hi('@constant.builtin',           { fg = c.number })
+    hi('@constant.macro',             { fg = c.func_name })
+
+    -- Variables
+    hi('@variable',                   { fg = c.variable })
+    hi('@variable.builtin',           { fg = c.number })        -- self, this, super
+    hi('@variable.parameter',         { fg = c.func_param, italic = true })
+    hi('@variable.parameter.builtin', { fg = c.func_param, italic = true })
+    hi('@variable.member',            { fg = c.variable })
+
+    -- Keywords
+    hi('@keyword',                    { fg = c.keyword })
+    hi('@keyword.coroutine',          { fg = c.keyword })
+    hi('@keyword.function',           { fg = c.keyword })
+    hi('@keyword.operator',           { fg = c.keyword })
+    hi('@keyword.return',             { fg = c.keyword })
+    hi('@keyword.import',             { fg = c.keyword })
+    hi('@keyword.exception',          { fg = c.keyword })
+    hi('@keyword.conditional',        { fg = c.keyword })
+    hi('@keyword.conditional.ternary',{ fg = c.keyword })
+    hi('@keyword.repeat',             { fg = c.keyword })
+    hi('@keyword.debug',              { fg = c.lib_func })
+    hi('@keyword.directive',          { fg = c.func_name })
+    hi('@keyword.directive.define',   { fg = c.func_name })
+
+    -- Operators
+    hi('@operator',                   { fg = c.keyword })
+
+    -- ── PUNCTUATION — THE KEY SECTION ────────────────────────────────────────
+    -- bracketsForeground = #AE81FF (c.number) with underline
+    -- bracketContentsForeground = #F8F8F2 A5 (semi-transparent fg, use fg)
+    -- tagsOptions = stippled_underline (tag brackets get stippled underline)
+    -- Commas, semicolons, dots → normal fg (not coloured in the tmTheme)
+    hi('@punctuation.bracket',        { fg = c.number })        -- ( ) [ ] { }
+    hi('@punctuation.delimiter',      { fg = c.fg })            -- , ; . :
+    hi('@punctuation.special',        { fg = c.keyword })       -- interpolation #{} etc.
+
+    -- Types
+    hi('@type',                       { fg = c.storage_type, italic = true })
+    hi('@type.builtin',               { fg = c.storage_type, italic = true })
+    hi('@type.definition',            { fg = c.storage_type, italic = true })
+    hi('@type.qualifier',             { fg = c.storage_type, italic = true })
+    hi('@storageclass',               { fg = c.storage_type, italic = true })
+    hi('@attribute',                  { fg = c.func_name })
+    hi('@attribute.builtin',          { fg = c.lib_func })
+    hi('@namespace',                  { fg = c.storage_type })
+    hi('@module',                     { fg = c.storage_type })
+    hi('@module.builtin',             { fg = c.lib_func })
+
+    -- Functions
+    hi('@function',                   { fg = c.func_name })
+    hi('@function.builtin',           { fg = c.lib_func })
+    hi('@function.call',              { fg = c.func_name })
+    hi('@function.macro',             { fg = c.func_name })
+    hi('@function.method',            { fg = c.func_name })
+    hi('@function.method.call',       { fg = c.func_name })
+    hi('@constructor',                { fg = c.func_name })
+
+    -- Properties / fields
+    hi('@property',                   { fg = c.variable })
+    hi('@field',                      { fg = c.variable })
+
+    -- Tags (HTML, XML, JSX) — tagsOptions=stippled_underline
+    hi('@tag',                        { fg = c.tag_name })
+    hi('@tag.attribute',              { fg = c.func_name })
+    hi('@tag.delimiter',              { fg = c.number })        -- < > / — bracket colour
+
+    -- Markup / Markdown
+    hi('@markup.heading',             { fg = c.func_name, bold = true })
+    hi('@markup.heading.1',           { fg = c.func_name, bold = true })
+    hi('@markup.heading.2',           { fg = c.storage_type, bold = true })
+    hi('@markup.heading.3',           { fg = c.keyword, bold = true })
+    hi('@markup.heading.4',           { fg = c.string, bold = true })
+    hi('@markup.heading.5',           { fg = c.comment, bold = true })
+    hi('@markup.heading.6',           { fg = c.comment })
+    hi('@markup.link',                { fg = c.lib_func })
+    hi('@markup.link.url',            { fg = c.lib_func, underline = true })
+    hi('@markup.link.label',          { fg = c.func_name })
+    hi('@markup.raw',                 { fg = c.string })
+    hi('@markup.raw.block',           { fg = c.string })
+    hi('@markup.italic',              { fg = c.fg, italic = true })
+    hi('@markup.strong',              { fg = c.fg, bold = true })
+    hi('@markup.strikethrough',       { fg = c.comment, strikethrough = true })
+    hi('@markup.underline',           { underline = true })
+    hi('@markup.quote',               { fg = c.comment, italic = true })
+    hi('@markup.list',                { fg = c.keyword })
+    hi('@markup.list.checked',        { fg = c.func_name })
+    hi('@markup.list.unchecked',      { fg = c.comment })
+    hi('@markup.math',                { fg = c.number })
+
+    -- Diff
+    hi('@diff.plus',                  { fg = c.diff_ins })
+    hi('@diff.minus',                 { fg = c.diff_del })
+    hi('@diff.delta',                 { fg = c.diff_chg })
+
+    -- ── 4. LSP SEMANTIC TOKENS ───────────────────────────────────────────────
+
+    hi('@lsp.type.class',             { fg = c.func_name, underline = true })
+    hi('@lsp.type.decorator',         { fg = c.func_name })
+    hi('@lsp.type.enum',              { fg = c.storage_type, italic = true })
+    hi('@lsp.type.enumMember',        { fg = c.number })
+    hi('@lsp.type.event',             { fg = c.func_name })
+    hi('@lsp.type.function',          { fg = c.func_name })
+    hi('@lsp.type.interface',         { fg = c.storage_type, italic = true })
+    hi('@lsp.type.macro',             { fg = c.func_name })
+    hi('@lsp.type.method',            { fg = c.func_name })
+    hi('@lsp.type.modifier',          { fg = c.storage_type, italic = true })
+    hi('@lsp.type.namespace',         { fg = c.storage_type })
+    hi('@lsp.type.parameter',         { fg = c.func_param, italic = true })
+    hi('@lsp.type.property',          { fg = c.variable })
+    hi('@lsp.type.regexp',            { fg = c.string })
+    hi('@lsp.type.struct',            { fg = c.storage_type, italic = true })
+    hi('@lsp.type.type',              { fg = c.storage_type, italic = true })
+    hi('@lsp.type.typeParameter',     { fg = c.func_param, italic = true })
+    hi('@lsp.type.variable',          { fg = c.variable })
+    hi('@lsp.type.keyword',           { fg = c.keyword })
+    hi('@lsp.type.comment',           { fg = c.comment })
+    hi('@lsp.type.string',            { fg = c.string })
+    hi('@lsp.type.number',            { fg = c.number })
+    hi('@lsp.type.operator',          { fg = c.keyword })
+    hi('@lsp.type.selfKeyword',       { fg = c.number })
+    hi('@lsp.type.builtinType',       { fg = c.storage_type, italic = true })
+    hi('@lsp.type.lifetime',          { fg = c.lib_func })
+
+    -- LSP modifier overrides
+    hi('@lsp.mod.readonly',           { fg = c.number })
+    hi('@lsp.mod.static',             { fg = c.number })
+    hi('@lsp.mod.deprecated',         { fg = c.invalid_fg, bg = c.dep_bg })
+    hi('@lsp.mod.abstract',           { italic = true })
+
+    -- ── 5. DIAGNOSTICS ───────────────────────────────────────────────────────
+
+    -- sublimelinter.illegal → bg #FF4A52 fg #FFFFFF    underline #FF0000
+    -- sublimelinter.warning → bg #FFEF85 fg #FFFFFF    underline #D30000
+    -- sublimelinter.notes   → bg #FFFFAA fg #FFFFFF
+    hi('DiagnosticError',             { fg = c.lint_err_bg })
+    hi('DiagnosticWarn',              { fg = c.lint_warn_bg })
+    hi('DiagnosticInfo',              { fg = c.fg })
+    hi('DiagnosticHint',              { fg = c.lint_note_bg })
+    hi('DiagnosticOk',                { fg = c.diff_ins })
+
+    hi('DiagnosticUnderlineError',    { sp = c.lint_err_ul,  undercurl = true })
+    hi('DiagnosticUnderlineWarn',     { sp = c.lint_warn_ul, undercurl = true })
+    hi('DiagnosticUnderlineInfo',     { sp = c.lib_func,     undercurl = true })
+    hi('DiagnosticUnderlineHint',     { sp = c.find_hl,      undercurl = true })
+
+    hi('DiagnosticFloatingError',     { fg = c.lint_err_bg })
+    hi('DiagnosticFloatingWarn',      { fg = c.lint_warn_bg })
+    hi('DiagnosticFloatingInfo',      { fg = c.fg })
+    hi('DiagnosticFloatingHint',      { fg = c.lint_note_bg })
+
+    hi('DiagnosticSignError',         { fg = c.lint_err_bg,  bg = c.bg })
+    hi('DiagnosticSignWarn',          { fg = c.lint_warn_bg, bg = c.bg })
+    hi('DiagnosticSignInfo',          { fg = c.fg,           bg = c.bg })
+    hi('DiagnosticSignHint',          { fg = c.lint_note_bg, bg = c.bg })
+
+    hi('DiagnosticVirtualTextError',  { fg = c.lint_err_bg,  italic = true })
+    hi('DiagnosticVirtualTextWarn',   { fg = c.lint_warn_bg, italic = true })
+    hi('DiagnosticVirtualTextInfo',   { fg = c.fg,           italic = true })
+    hi('DiagnosticVirtualTextHint',   { fg = c.lint_note_bg, italic = true })
+
+    -- ── 6. LANGUAGE-SPECIFIC OVERRIDES ───────────────────────────────────────
+
+    -- JSON — object keys inherit Identifier (#678CB1); values are #CFCFC2
+    hi('jsonKeyword',                 { fg = c.variable })
+    hi('jsonString',                  { fg = c.json_str_val })
+    hi('jsonBraces',                  { fg = c.number })
+    hi('jsonQuote',                   { fg = c.string })
+    hi('jsonBoolean',                 { fg = c.number })
+    hi('jsonNull',                    { fg = c.number })
+    hi('jsonNumber',                  { fg = c.number })
+
+    -- HTML / XML — tagsOptions=stippled_underline
+    hi('@tag.html',                   { fg = c.tag_name })
+    hi('@tag.attribute.html',         { fg = c.func_name })
+    hi('@tag.delimiter.html',         { fg = c.number })
+    hi('@tag.jsx',                    { fg = c.tag_name })
+    hi('@tag.attribute.jsx',          { fg = c.func_name })
+    hi('@tag.tsx',                    { fg = c.tag_name })
+    hi('@tag.attribute.tsx',          { fg = c.func_name })
+
+    -- CSS
+    hi('@property.css',               { fg = c.storage_type, italic = true })
+    hi('@type.css',                   { fg = c.tag_name })
+    hi('cssClassName',                { fg = c.func_name })
+    hi('cssClassNameDot',             { fg = c.keyword })
+    hi('cssIdentifier',               { fg = c.variable })
+    hi('cssBraces',                   { fg = c.number })
+    hi('cssSelectorOp',               { fg = c.keyword })
+    hi('cssProp',                     { fg = c.storage_type, italic = true })
+
+    -- PHP
+    hi('@variable.php',               { fg = c.variable })
+    hi('phpVarSelector',              { fg = c.variable })
+    hi('phpMemberSelector',           { fg = c.keyword })
+    hi('phpParent',                   { fg = c.number })
+
+    -- Lua
+    hi('@punctuation.bracket.lua',    { fg = c.number })
+    hi('luaBraces',                   { fg = c.number })
+    hi('luaParens',                   { fg = c.number })
+
+    -- Python
+    hi('@variable.builtin.python',    { fg = c.number })
+    hi('pythonBuiltin',               { fg = c.lib_func })
+
+    -- C# — csParens / csInterpolationDelim → bracket color
+    hi('csParens',                    { fg = c.number })
+    hi('csInterpolationDelim',        { fg = c.number })
+
+    -- SQL
+    hi('sqlKeyword',                  { fg = c.keyword })
+    hi('sqlSpecial',                  { fg = c.lib_func })
+
+    -- Markdown
+    hi('markdownCode',                { fg = c.string })
+    hi('markdownCodeBlock',           { fg = c.string })
+    hi('markdownH1',                  { fg = c.func_name, bold = true })
+    hi('markdownH2',                  { fg = c.storage_type, bold = true })
+    hi('markdownH3',                  { fg = c.keyword, bold = true })
+    hi('markdownLink',                { fg = c.lib_func, underline = true })
+    hi('markdownUrl',                 { fg = c.lib_func, underline = true })
+    hi('markdownLinkText',            { fg = c.func_name })
+
+    -- ── 7. PLUGIN INTEGRATIONS ───────────────────────────────────────────────
+
+    -- nvim-cmp
+    hi('CmpItemAbbrMatch',            { fg = c.func_name,   bold = true })
+    hi('CmpItemAbbrMatchFuzzy',       { fg = c.func_name })
+    hi('CmpItemAbbrDeprecated',       { fg = c.comment,     strikethrough = true })
+    hi('CmpItemKindFunction',         { fg = c.func_name })
+    hi('CmpItemKindMethod',           { fg = c.func_name })
+    hi('CmpItemKindClass',            { fg = c.storage_type })
+    hi('CmpItemKindInterface',        { fg = c.storage_type })
+    hi('CmpItemKindVariable',         { fg = c.variable })
+    hi('CmpItemKindConstant',         { fg = c.number })
+    hi('CmpItemKindKeyword',          { fg = c.keyword })
+    hi('CmpItemKindString',           { fg = c.string })
+    hi('CmpItemKindField',            { fg = c.variable })
+    hi('CmpItemKindEnum',             { fg = c.storage_type })
+    hi('CmpItemKindEnumMember',       { fg = c.number })
+    hi('CmpItemKindSnippet',          { fg = c.func_param })
+    hi('CmpItemKindModule',           { fg = c.storage_type })
+    hi('CmpItemKindText',             { fg = c.fg })
+    hi('CmpItemKindOperator',         { fg = c.keyword })
+    hi('CmpItemKindUnit',             { fg = c.number })
+    hi('CmpItemMenu',                 { fg = c.comment, italic = true })
+
+    -- blink.cmp (NeoVim 0.11 preferred completion plugin)
+    hi('BlinkCmpLabel',               { fg = c.fg })
+    hi('BlinkCmpLabelMatch',          { fg = c.func_name, bold = true })
+    hi('BlinkCmpLabelDeprecated',     { fg = c.comment, strikethrough = true })
+    hi('BlinkCmpKindFunction',        { fg = c.func_name })
+    hi('BlinkCmpKindMethod',          { fg = c.func_name })
+    hi('BlinkCmpKindClass',           { fg = c.storage_type })
+    hi('BlinkCmpKindVariable',        { fg = c.variable })
+    hi('BlinkCmpKindKeyword',         { fg = c.keyword })
+    hi('BlinkCmpKindConstant',        { fg = c.number })
+    hi('BlinkCmpKindSnippet',         { fg = c.func_param })
+    hi('BlinkCmpMenu',                { fg = c.fg, bg = c.line_hl })
+    hi('BlinkCmpMenuBorder',          { fg = c.sel_border, bg = c.line_hl })
+    hi('BlinkCmpMenuSelection',       { fg = c.find_hl_fg, bg = c.find_hl, bold = true })
+    hi('BlinkCmpDoc',                 { fg = c.fg, bg = c.line_hl })
+    hi('BlinkCmpDocBorder',           { fg = c.sel_border, bg = c.line_hl })
+    hi('BlinkCmpSignatureHelp',       { fg = c.fg, bg = c.line_hl })
+    hi('BlinkCmpSignatureHelpBorder', { fg = c.sel_border, bg = c.line_hl })
+
+    -- Telescope
+    hi('TelescopeNormal',             { fg = c.fg,         bg = c.bg })
+    hi('TelescopeBorder',             { fg = c.line_hl,    bg = c.bg })
+    hi('TelescopeMatching',           { fg = c.func_name,  bold = true })
+    hi('TelescopeSelection',          { bg = c.selection })
+    hi('TelescopeSelectionCaret',     { fg = c.keyword })
+    hi('TelescopeMultiSelection',     { bg = c.line_hl })
+    hi('TelescopePromptNormal',       { fg = c.fg,         bg = c.line_hl })
+    hi('TelescopePromptBorder',       { fg = c.line_hl,    bg = c.line_hl })
+    hi('TelescopePromptTitle',        { fg = c.func_name,  bold = true })
+    hi('TelescopeResultsTitle',       { fg = c.comment })
+    hi('TelescopePreviewTitle',       { fg = c.lib_func })
+
+    -- fzf-lua
+    hi('FzfLuaNormal',                { fg = c.fg,         bg = c.bg })
+    hi('FzfLuaBorder',                { fg = c.line_hl })
+    hi('FzfLuaTitle',                 { fg = c.func_name,  bold = true })
+    hi('FzfLuaCursorLine',            { bg = c.selection })
+    hi('FzfLuaMatch',                 { fg = c.func_name,  bold = true })
+
+    -- nvim-tree
+    hi('NvimTreeFolderIcon',          { fg = c.lib_func })
+    hi('NvimTreeFolderName',          { fg = c.lib_func })
+    hi('NvimTreeOpenedFolderName',    { fg = c.func_name })
+    hi('NvimTreeRootFolder',          { fg = c.keyword })
+    hi('NvimTreeGitDirty',            { fg = c.diff_chg })
+    hi('NvimTreeGitNew',              { fg = c.diff_ins })
+    hi('NvimTreeGitDeleted',          { fg = c.diff_del })
+    hi('NvimTreeIndentMarker',        { fg = c.invisibles })
+
+    -- neo-tree
+    hi('NeoTreeGitAdded',             { fg = c.diff_ins })
+    hi('NeoTreeGitModified',          { fg = c.diff_chg })
+    hi('NeoTreeGitDeleted',           { fg = c.diff_del })
+    hi('NeoTreeRootName',             { fg = c.keyword, bold = true })
+    hi('NeoTreeDirectoryIcon',        { fg = c.lib_func })
+    hi('NeoTreeDirectoryName',        { fg = c.lib_func })
+    hi('NeoTreeFileName',             { fg = c.fg })
+
+    -- Gitsigns
+    hi('GitSignsAdd',                 { fg = c.diff_ins,   bg = c.bg })
+    hi('GitSignsChange',              { fg = c.diff_chg,   bg = c.bg })
+    hi('GitSignsDelete',              { fg = c.diff_del,   bg = c.bg })
+    hi('GitSignsAddInline',           { fg = c.diff_ins,   bg = c.embedded_bg })
+    hi('GitSignsChangeInline',        { fg = c.diff_chg,   bg = c.embedded_bg })
+    hi('GitSignsDeleteInline',        { fg = c.diff_del,   bg = c.embedded_bg })
+
+    -- Which-key
+    hi('WhichKey',                    { fg = c.keyword })
+    hi('WhichKeyGroup',               { fg = c.lib_func })
+    hi('WhichKeyDesc',                { fg = c.fg })
+    hi('WhichKeySeperator',           { fg = c.comment })
+    hi('WhichKeyNormal',              { fg = c.fg,         bg = c.line_hl })
+    hi('WhichKeyBorder',              { fg = c.sel_border, bg = c.line_hl })
+    hi('WhichKeyTitle',               { fg = c.func_name,  bold = true })
+
+    -- Indent-blankline / indent-guides
+    hi('IblIndent',                   { fg = c.invisibles })
+    hi('IblScope',                    { fg = c.sel_border })
+    hi('IndentBlanklineChar',         { fg = c.invisibles })
+    hi('IndentBlanklineContextChar',  { fg = c.sel_border })
+
+    -- Noice
+    hi('NoiceCmdline',                { fg = c.fg,         bg = c.line_hl })
+    hi('NoiceCmdlineIcon',            { fg = c.keyword })
+    hi('NoiceCmdlineBorder',          { fg = c.sel_border, bg = c.line_hl })
+    hi('NoicePopup',                  { fg = c.fg,         bg = c.line_hl })
+    hi('NoicePopupBorder',            { fg = c.sel_border, bg = c.line_hl })
+    hi('NoiceConfirm',                { fg = c.fg,         bg = c.line_hl })
+
+    -- mini.nvim (mini.statusline, mini.files, mini.pick)
+    hi('MiniStatuslineModeNormal',    { fg = c.bg,         bg = c.func_name,   bold = true })
+    hi('MiniStatuslineModeInsert',    { fg = c.bg,         bg = c.keyword,     bold = true })
+    hi('MiniStatuslineModeVisual',    { fg = c.bg,         bg = c.number,      bold = true })
+    hi('MiniStatuslineModeReplace',   { fg = c.bg,         bg = c.diff_del,    bold = true })
+    hi('MiniStatuslineModeCommand',   { fg = c.bg,         bg = c.lib_func,    bold = true })
+    hi('MiniStatuslineModeOther',     { fg = c.bg,         bg = c.comment })
+    hi('MiniStatuslineFilename',      { fg = c.fg,         bg = c.line_hl })
+    hi('MiniStatuslineFileinfo',      { fg = c.comment,    bg = c.line_hl })
+    hi('MiniStatuslineDevinfo',       { fg = c.variable,   bg = c.line_hl })
+    hi('MiniPickMatchCurrent',        { bg = c.selection })
+    hi('MiniPickMatchMarked',         { fg = c.find_hl_fg, bg = c.find_hl })
+    hi('MiniPickPrompt',              { fg = c.func_name })
+    hi('MiniFilesTitle',              { fg = c.func_name, bold = true })
+    hi('MiniFilesTitleFocused',       { fg = c.func_name, bold = true, underline = true })
+    hi('MiniFilesDirectory',          { fg = c.lib_func })
+
+    -- ── 8. TERMINAL COLOURS ──────────────────────────────────────────────────
+    vim.g.terminal_color_0  = c.bg
+    vim.g.terminal_color_1  = c.diff_del
+    vim.g.terminal_color_2  = c.diff_ins
+    vim.g.terminal_color_3  = c.string
+    vim.g.terminal_color_4  = c.variable
+    vim.g.terminal_color_5  = c.number
+    vim.g.terminal_color_6  = c.lib_func
+    vim.g.terminal_color_7  = c.fg
+    vim.g.terminal_color_8  = c.invisibles
+    vim.g.terminal_color_9  = c.diff_del
+    vim.g.terminal_color_10 = c.diff_ins
+    vim.g.terminal_color_11 = c.find_hl
+    vim.g.terminal_color_12 = c.lib_func
+    vim.g.terminal_color_13 = c.number
+    vim.g.terminal_color_14 = c.lib_func
+    vim.g.terminal_color_15 = c.caret
+end
+
+return M
