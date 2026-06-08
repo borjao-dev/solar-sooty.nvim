@@ -1,0 +1,13 @@
+# Editors
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Se futuramente adicionar testes/scripts
+node_modules/
+__pycache__/
