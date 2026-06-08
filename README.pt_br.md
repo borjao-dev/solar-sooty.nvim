@@ -1,106 +1,100 @@
 # Solar Sooty — Vim & NeoVim Port
 
-A faithful port of the **Solar Sooty** theme (originally for VS Code / Sublime Text)
-for classic Vim and NeoVim 0.11+.
+Port fiel do tema **Solar Sooty** (originalmente para VS Code / Sublime Text)
+para Vim clássico e NeoVim 0.11+.
 
-Original color palette preserved in its entirety: background `#080808`, text `#F8F8F2`,
-strings `#F3E87E`, keywords `#EC7600`, functions `#A6E22E`, types `#66D9EF`,
-constants/numbers `#AE81FF`, variables `#678CB1`.
+Paleta original preservada integralmente: fundo `#080808`, texto `#F8F8F2`,
+strings `#F3E87E`, keywords `#EC7600`, funções `#A6E22E`, tipos `#66D9EF`,
+constantes/números `#AE81FF`, variáveis `#678CB1`.
 
 ---
 
-## Classic Vim (7+)
+## Vim clássico (7+)
 
-### Manual Installation
+### Instalação manual
 
 ```
-
 ~/.vim/colors/solar_sooty.vim
-
 ```
 
-### Installation via Plugin Manager
+### Instalação via plugin manager
 
 **vim-plug:**
 ```vim
-Plug 'your-user/solar-sooty-vim'
+Plug 'seu-usuario/solar-sooty-vim'
 ```
 
-### Activation
+### Ativação
 
-In your `~/.vimrc`:
+No seu `~/.vimrc`:
 ```vim
-set termguicolors          " required for accurate colors (Vim 8+)
+set termguicolors          " obrigatório para cores exatas (Vim 8+)
 colorscheme solar_sooty
 ```
 
-> On terminals that do not support `termguicolors`, the theme automatically
-> falls back to xterm-256 approximations. All colors have been mapped manually.
+> Em terminais que não suportam `termguicolors`, o tema cai automaticamente
+> para aproximações xterm-256. Todas as cores foram mapeadas manualmente.
 
 ---
 
 ## NeoVim (0.11.5+)
 
-The NeoVim version is written in pure Lua and includes:
-- All classic highlight groups
+A versão NeoVim é escrita em Lua pura e cobre:
+- Todos os grupos de highlight clássicos
 - Treesitter (`@comment`, `@function`, `@lsp.type.*`, etc.)
-- LSP semantic tokens (`@lsp.type.*`)
-- Diagnostics (`DiagnosticError`, `DiagnosticUnderlineWarn`, etc.)
+- Tokens semânticos LSP (`@lsp.type.*`)
+- Diagnósticos (`DiagnosticError`, `DiagnosticUnderlineWarn`, etc.)
 - Plugins: nvim-cmp, Telescope, nvim-tree, Gitsigns, Which-key, indent-blankline
 
-### Plugin Structure
+### Estrutura do plugin
 
 ```
-
 solar-sooty-nvim/
 ├── colors/
-│   └── solar_sooty.vim      ← entrypoint (calls Lua)
+│   └── solar_sooty.vim      ← entrypoint (chama o Lua)
 └── lua/
     └── solar_sooty/
-        └── init.lua         ← all logic
-
+        └── init.lua         ← toda a lógica
 ```
 
-### Manual Installation
+### Instalação manual
 
 ```
-
 ~/.config/nvim/colors/solar_sooty.vim
 ~/.config/nvim/lua/solar_sooty/init.lua
-
 ```
 
-### Installation via lazy.nvim
+### Instalação via lazy.nvim
 
 ```lua
 {
-    dir = '~/path/to/solar-sooty-nvim',  -- or repository URL
+    dir = '~/path/to/solar-sooty-nvim',  -- ou URL do repositório
     name = 'solar_sooty',
-    priority = 1000,                     -- loads before other plugins
+    priority = 1000,                      -- carrega antes de outros plugins
     config = function()
         vim.cmd.colorscheme('solar_sooty')
     end,
 }
 ```
 
-### Installation via vim-plug / packer
+### Instalação via vim-plug / packer
 
 ```vim
-Plug 'your-user/solar-sooty-nvim'
+Plug 'seu-usuario/solar-sooty-nvim'
 ```
 ```lua
-use 'your-user/solar-sooty-nvim'
+use 'seu-usuario/solar-sooty-nvim'
 ```
 
-### Activation
+### Ativação
 
-In your `init.lua`:
+No seu `init.lua`:
 ```lua
 vim.opt.termguicolors = true
 vim.cmd.colorscheme('solar_sooty')
 ```
 
-Or in `init.vim`:
+Ou no `init.vim`:
 ```vim
 set termguicolors
 colorscheme solar_sooty
@@ -108,9 +102,9 @@ colorscheme solar_sooty
 
 ---
 
-## Token Mapping (TMTheme → Vim)
+## Mapeamento de tokens (TMTheme → Vim)
 
-| TMTheme scope                         | Vim Group              | Color       |
+| TMTheme scope                         | Grupo Vim              | Cor         |
 |---------------------------------------|------------------------|-------------|
 | `comment`                             | `Comment`              | `#999999`   |
 | `string`                              | `String`               | `#F3E87E`   |
