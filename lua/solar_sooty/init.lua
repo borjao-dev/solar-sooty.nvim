@@ -1,7 +1,7 @@
 -- =============================================================================
 -- solar_sooty — NeoVim 0.11+ colorscheme (Lua)
 -- Ported from the Solar Sooty TMTheme (gerane/VSCodeThemes, Colorsublime)
--- Maintainer: Borjão (Rafael Borges Dias Baptista)
+-- Maintainer: Rafael Borges Dias Baptista (Borjao)
 -- =============================================================================
 
 local M = {}
@@ -186,10 +186,10 @@ function M.load()
     hi('Exception',        { fg = c.keyword })
     hi('Operator',         { fg = c.keyword })
 
-    hi('Type',             { fg = c.storage_type, italic = true })
-    hi('Typedef',          { fg = c.storage_type, italic = true })
-    hi('StorageClass',     { fg = c.storage_type, italic = true })
-    hi('Structure',        { fg = c.storage_type, italic = true })
+    hi('Type',             { fg = c.storage_type, italic = true })  -- storage.type → cyan italic
+    hi('Typedef',          { fg = c.storage_type, italic = true })  -- storage.type → cyan italic
+    hi('StorageClass',     { fg = c.keyword })                       -- storage (no .type) → orange
+    hi('Structure',        { fg = c.storage_type, italic = true })  -- storage.type → cyan italic
 
     hi('Function',         { fg = c.func_name })
 
@@ -259,7 +259,8 @@ function M.load()
     -- Keywords
     hi('@keyword',                    { fg = c.keyword })
     hi('@keyword.coroutine',          { fg = c.keyword })
-    hi('@keyword.function',           { fg = c.keyword })
+    -- storage.type.function → cyan italic: function/def/func/fn/fun across all languages
+    hi('@keyword.function',           { fg = c.storage_type, italic = true })
     hi('@keyword.operator',           { fg = c.keyword })
     hi('@keyword.return',             { fg = c.keyword })
     hi('@keyword.import',             { fg = c.keyword })
@@ -270,6 +271,10 @@ function M.load()
     hi('@keyword.debug',              { fg = c.lib_func })
     hi('@keyword.directive',          { fg = c.func_name })
     hi('@keyword.directive.define',   { fg = c.func_name })
+    -- storage (no .type) → orange: public/private/static/readonly/const/async/abstract/override
+    hi('@keyword.modifier',           { fg = c.keyword })
+    -- storage.type → cyan italic: class/struct/interface/enum/record keywords
+    hi('@keyword.type',               { fg = c.storage_type, italic = true })
 
     -- Operators
     hi('@operator',                   { fg = c.keyword })
@@ -284,11 +289,11 @@ function M.load()
     hi('@punctuation.special',        { fg = c.keyword })       -- interpolation #{} etc.
 
     -- Types
-    hi('@type',                       { fg = c.storage_type, italic = true })
-    hi('@type.builtin',               { fg = c.storage_type, italic = true })
-    hi('@type.definition',            { fg = c.storage_type, italic = true })
-    hi('@type.qualifier',             { fg = c.storage_type, italic = true })
-    hi('@storageclass',               { fg = c.storage_type, italic = true })
+    hi('@type',                       { fg = c.storage_type, italic = true })  -- storage.type → cyan italic
+    hi('@type.builtin',               { fg = c.storage_type, italic = true })  -- string/int/bool → cyan italic
+    hi('@type.definition',            { fg = c.func_name, underline = true })  -- entity.name.class → green + underline
+    hi('@type.qualifier',             { fg = c.keyword })                       -- storage (no .type) → orange
+    hi('@storageclass',               { fg = c.keyword })                       -- storage (no .type) → orange
     hi('@attribute',                  { fg = c.func_name })
     hi('@attribute.builtin',          { fg = c.lib_func })
     hi('@namespace',                  { fg = c.storage_type })
@@ -352,7 +357,7 @@ function M.load()
     hi('@lsp.type.interface',         { fg = c.storage_type, italic = true })
     hi('@lsp.type.macro',             { fg = c.func_name })
     hi('@lsp.type.method',            { fg = c.func_name })
-    hi('@lsp.type.modifier',          { fg = c.storage_type, italic = true })
+    hi('@lsp.type.modifier',          { fg = c.keyword })            -- storage modifiers → orange
     hi('@lsp.type.namespace',         { fg = c.storage_type })
     hi('@lsp.type.parameter',         { fg = c.func_param, italic = true })
     hi('@lsp.type.property',          { fg = c.variable })
@@ -438,23 +443,74 @@ function M.load()
     hi('cssProp',                     { fg = c.storage_type, italic = true })
 
     -- PHP
-    hi('@variable.php',               { fg = c.variable })
-    hi('phpVarSelector',              { fg = c.variable })
-    hi('phpMemberSelector',           { fg = c.keyword })
-    hi('phpParent',                   { fg = c.number })
+    -- phpStructure = class/interface/trait/abstract/enum keywords → storage.type → cyan italic
+    hi('phpStructure',               { link = 'Type' })
+    hi('@variable.php',              { fg = c.variable })
+    hi('phpVarSelector',             { fg = c.variable })
+    hi('phpMemberSelector',          { fg = c.keyword })
+    hi('phpParent',                  { fg = c.number })
+    -- phpFunction = function keyword → storage.type.function → cyan italic
+    hi('phpFunctions',               { link = 'Function' })   -- built-in function calls → green
+    hi('@keyword.function.php',      { fg = c.storage_type, italic = true })
 
     -- Lua
-    hi('@punctuation.bracket.lua',    { fg = c.number })
-    hi('luaBraces',                   { fg = c.number })
-    hi('luaParens',                   { fg = c.number })
+    -- luaFunction = function keyword → storage.type.function → cyan italic
+    hi('luaFunction',                { link = 'Type' })
+    hi('@punctuation.bracket.lua',   { fg = c.number })
+    hi('luaBraces',                  { fg = c.number })
+    hi('luaParens',                  { fg = c.number })
 
     -- Python
-    hi('@variable.builtin.python',    { fg = c.number })
-    hi('pythonBuiltin',               { fg = c.lib_func })
+    -- def/class in Python: storage.type.function / storage.type.class → cyan italic
+    hi('@keyword.function.python',   { fg = c.storage_type, italic = true })
+    hi('@keyword.type.python',       { fg = c.storage_type, italic = true })
+    hi('@variable.builtin.python',   { fg = c.number })
+    hi('pythonBuiltin',              { fg = c.lib_func })
 
-    -- C# — csParens / csInterpolationDelim → bracket color
+    -- JavaScript / TypeScript
+    -- function keyword → storage.type.function → cyan italic
+    hi('jsFunction',                 { link = 'Type' })
+    hi('@keyword.function.javascript',{ fg = c.storage_type, italic = true })
+    hi('@keyword.function.typescript',{ fg = c.storage_type, italic = true })
+
+    -- Ruby
+    -- class/module keywords → storage.type.class → cyan italic
+    -- def keyword → storage.type.function → cyan italic
+    hi('rubyClass',                  { link = 'Type' })
+    hi('rubyDefine',                 { link = 'Type' })
+    hi('rubyModuleDeclaration',      { link = 'Type' })
+    hi('@keyword.function.ruby',     { fg = c.storage_type, italic = true })
+    hi('@keyword.type.ruby',         { fg = c.storage_type, italic = true })
+
+    -- Go
+    -- func keyword → storage.type.function → cyan italic
+    -- var/const/type → storage → orange (goDeclaration covers all; split via treesitter)
+    hi('goDeclaration',              { link = 'Type' })  -- func dominates visually
+    hi('@keyword.function.go',       { fg = c.storage_type, italic = true })
+    hi('@keyword.type.go',           { fg = c.storage_type, italic = true })
+
+    -- Shell / Bash
+    -- function keyword → storage.type.function → cyan italic
+    hi('shFunctionKey',              { link = 'Type' })
+    hi('@keyword.function.bash',     { fg = c.storage_type, italic = true })
+
+    -- C# — overrides for correct storage/storage.type separation
+    -- csStorage covers: class, struct, interface, enum, delegate, record, namespace → storage.type → cyan italic
+    hi('csStorage',                   { link = 'Type' })
+    -- csModifier covers: public, private, protected, static, abstract, sealed, virtual,
+    --   override, readonly, extern, const, async, partial → storage → orange
+    hi('csModifier',                  { link = 'Keyword' })
+    -- csClass / csClassType = type names used as types → cyan italic
+    hi('csClass',                     { link = 'Type' })
+    hi('csClassType',                 { link = 'Type' })
+    hi('csNew',                       { link = 'Keyword' })
+    -- Treesitter C# — explicit overrides to guarantee correctness regardless of grammar version
+    hi('@keyword.modifier.cs',        { fg = c.keyword })                      -- storage → orange
+    hi('@keyword.type.cs',            { fg = c.storage_type, italic = true })  -- storage.type → cyan italic
+    hi('@type.definition.cs',         { fg = c.func_name, underline = true })  -- entity.name.class
+    -- Brackets and interpolation in C#
     hi('csParens',                    { fg = c.number })
-    hi('csInterpolationDelim',        { fg = c.number })
+    hi('csInterpolationDelim',        { fg = c.keyword })  -- $"{}" interpolation braces → orange (punctuation.special)
 
     -- SQL
     hi('sqlKeyword',                  { fg = c.keyword })
@@ -620,3 +676,4 @@ function M.load()
 end
 
 return M
+

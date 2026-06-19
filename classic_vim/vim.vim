@@ -1,8 +1,8 @@
 " =============================================================================
 " Name:         Solar Sooty
 " Description:  Dark theme ported from the Solar Sooty TMTheme (gerane/VSCodeThemes)
-" Maintainer:   Ported by Borjão (Rafael Borges Dias Baptista)
-" License:      Same as original Solar Sooty
+" Maintainer:   Rafael Borges Dias Baptista (Borjao)
+" License:      MIT
 " Compatible:   Vim 7+ (gui + 256-color terminal via cterm approximations)
 " =============================================================================
 " Key palette from TMTheme:
@@ -195,11 +195,13 @@ call s:hi('Exception',     '#EC7600', '', 'NONE',           'NONE')
 " keyword.operator → #EC7600 (operators: +,-,*,/,=,<,>, etc.)
 call s:hi('Operator',      '#EC7600', '', 'NONE',           'NONE')
 
-" storage.type → #66D9EF italic
+" storage.type → #66D9EF italic  (class/struct/interface/enum keywords, type names)
 call s:hi('Type',          '#66D9EF', '', 'italic',         'italic')
 call s:hi('Typedef',       '#66D9EF', '', 'italic',         'italic')
-call s:hi('StorageClass',  '#66D9EF', '', 'italic',         'italic')
 call s:hi('Structure',     '#66D9EF', '', 'italic',         'italic')
+
+" storage (no .type) → #EC7600 orange  (public/private/static/readonly/const/abstract)
+call s:hi('StorageClass',  '#EC7600', '', 'NONE',           'NONE')
 
 " entity.name.class → #A6E22E underline
 " entity.name.function → #A6E22E
@@ -279,7 +281,8 @@ highlight! link @variable.member            Identifier
 " — Keywords
 highlight! link @keyword                    Keyword
 highlight! link @keyword.coroutine          Keyword
-highlight! link @keyword.function           Keyword
+" storage.type.function → cyan italic: function/def/func/fn/fun across all languages
+highlight! link @keyword.function           Type
 highlight! link @keyword.operator           Operator
 highlight! link @keyword.return             Keyword
 highlight! link @keyword.import             Include
@@ -302,10 +305,18 @@ highlight! link @punctuation.bracket        Delimiter
 highlight! link @punctuation.delimiter      Normal
 highlight! link @punctuation.special        Operator
 
+" — Keywords (additions)
+" storage (no .type) → orange: public/private/static/readonly/const/async/abstract/override
+highlight! link @keyword.modifier           Keyword
+" storage.type → cyan italic: class/struct/interface/enum/record keywords
+highlight! link @keyword.type               Type
+
 " — Types
 highlight! link @type                       Type
 highlight! link @type.builtin               Type
-highlight! link @type.definition            Type
+" entity.name.class → green + underline (class/struct name in declaration)
+call s:hi('@type.definition', '#A6E22E', '', 'underline', 'underline')
+" storage (no .type) → orange
 highlight! link @type.qualifier             StorageClass
 highlight! link @storageclass               StorageClass
 highlight! link @attribute                  Function
@@ -386,7 +397,8 @@ highlight! link pythonDecorator     Function
 highlight! link pythonDottedName    Function
 highlight! link pythonException     Exception
 highlight! link pythonExceptions    Type
-highlight! link pythonFunction      Function
+" def/class keywords → storage.type → cyan italic
+highlight! link pythonFunction      Type
 highlight! link pythonImport        Include
 highlight! link pythonOperator      Operator
 highlight! link pythonParam         SpecialChar
@@ -402,7 +414,8 @@ highlight! link phpMemberSelector   Operator
 highlight! link phpMethods          Function
 highlight! link phpParent           Delimiter
 highlight! link phpRegion           Delimiter
-highlight! link phpStructure        StorageClass
+" class/interface/abstract/trait keywords → storage.type → cyan italic
+highlight! link phpStructure        Type
 highlight! link phpSuperglobals     Constant
 highlight! link phpType             Type
 highlight! link phpVarSelector      Identifier
@@ -411,12 +424,14 @@ highlight! link phpVarSelector      Identifier
 highlight! link jsArrowFuncArgs     SpecialChar
 highlight! link jsBuiltins          Special
 highlight! link jsClassDefinition   Type
-highlight! link jsClassKeyword      StorageClass
+" class keyword → storage.type.class → cyan italic
+highlight! link jsClassKeyword      Type
 highlight! link jsExtendsKeyword    Keyword
 highlight! link jsFrom              Include
 highlight! link jsFuncArgs          SpecialChar
 highlight! link jsFuncCall          Function
-highlight! link jsFunction          Keyword
+" function keyword → storage.type.function → cyan italic
+highlight! link jsFunction          Type
 highlight! link jsGlobalObjects     Special
 highlight! link jsImport            Include
 highlight! link jsNull              Constant
@@ -496,8 +511,9 @@ highlight! link scssMixinName       Function
 highlight! link scssVariable        Identifier
 
 " ── Lua ──────────────────────────────────────────────────────────
-highlight! link luaFunction         Keyword
-highlight! link luaLocal            StorageClass
+" function keyword → storage.type.function → cyan italic
+highlight! link luaFunction         Type
+highlight! link luaLocal            Keyword
 highlight! link luaSpecialTable     Special
 highlight! link luaSpecialValue     Special
 highlight! link luaBuiltIn          Special
@@ -529,14 +545,17 @@ highlight! link csContextualStatement Keyword
 highlight! link csEndColon          Normal
 highlight! link csGeneric           Type
 highlight! link csInterpolation     SpecialChar
-highlight! link csInterpolationDelim Delimiter
+" Interpolation delimiters $"{}" → orange (punctuation.special in TMTheme context)
+highlight! link csInterpolationDelim Operator
+" csModifier = public/private/static/abstract/readonly/const/async → storage → orange
 highlight! link csModifier          StorageClass
 highlight! link csNew               Keyword
 highlight! link csNewType           Type
 highlight! link csOperator          Operator
 highlight! link csParens            Delimiter
 highlight! link csPPKeyword         PreProc
-highlight! link csStorage           StorageClass
+" csStorage = class/struct/interface/enum/delegate/record → storage.type → cyan italic
+highlight! link csStorage           Type
 highlight! link csType              Type
 highlight! link csUnspecifiedStatement Keyword
 highlight! link csXmlTag            SpecialComment
@@ -621,7 +640,8 @@ highlight! link shCmdSubRegion      Delimiter
 highlight! link shDerefSimple       Identifier
 highlight! link shDerefVar          Identifier
 highlight! link shFunction          Function
-highlight! link shFunctionKey       Keyword
+" function keyword → storage.type.function → cyan italic
+highlight! link shFunctionKey       Type
 highlight! link shOperator          Operator
 highlight! link shParen             Delimiter
 highlight! link shRange             Operator
@@ -632,11 +652,13 @@ highlight! link rubyAttribute       Function
 highlight! link rubyBlock           Delimiter
 highlight! link rubyBlockParameter  SpecialChar
 highlight! link rubyBlockParameterList SpecialChar
-highlight! link rubyClass           StorageClass
+" class keyword → storage.type.class → cyan italic
+highlight! link rubyClass           Type
 highlight! link rubyClassDeclaration Type
 highlight! link rubyConstant        Constant
 highlight! link rubyControl         Keyword
-highlight! link rubyDefine          Keyword
+" def keyword → storage.type.function → cyan italic
+highlight! link rubyDefine          Type
 highlight! link rubyEscape          SpecialChar
 highlight! link rubyFunction        Function
 highlight! link rubyGlobalVariable  Identifier
@@ -644,6 +666,7 @@ highlight! link rubyInclude         Include
 highlight! link rubyInstanceVariable Identifier
 highlight! link rubyInterpolation   SpecialChar
 highlight! link rubyInterpolationDelimiter Delimiter
+" module keyword → storage.type → cyan italic
 highlight! link rubyModuleDeclaration Type
 highlight! link rubyOperator        Operator
 highlight! link rubyPseudoVariable  Constant
@@ -652,7 +675,8 @@ highlight! link rubyStringDelimiter String
 " ── Go ────────────────────────────────────────────────────────────
 highlight! link goBuiltins          Special
 highlight! link goConditional       Conditional
-highlight! link goDeclaration       StorageClass
+" func/var/const/type keywords: func → storage.type.function → cyan italic (dominates)
+highlight! link goDeclaration       Type
 highlight! link goFunctionCall      Function
 highlight! link goLabel             Label
 highlight! link goOperator          Operator
