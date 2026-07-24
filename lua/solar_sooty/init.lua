@@ -301,12 +301,19 @@ function M.load()
     hi('@module.builtin',             { fg = c.lib_func })
 
     -- Functions
+    -- All known capture-name variants are mapped as a safety net, since
+    -- nvim-treesitter query files change capture names across versions
+    -- (e.g. @function.method vs @method, @function.call vs @call).
     hi('@function',                   { fg = c.func_name })
     hi('@function.builtin',           { fg = c.lib_func })
     hi('@function.call',              { fg = c.func_name })
     hi('@function.macro',             { fg = c.func_name })
     hi('@function.method',            { fg = c.func_name })
     hi('@function.method.call',       { fg = c.func_name })
+    hi('@method',                     { fg = c.func_name })
+    hi('@method.call',                { fg = c.func_name })
+    hi('@call',                       { fg = c.func_name })
+    hi('@call.function',              { fg = c.func_name })
     hi('@constructor',                { fg = c.func_name })
 
     -- Properties / fields
@@ -375,11 +382,54 @@ function M.load()
     hi('@lsp.type.builtinType',       { fg = c.storage_type, italic = true })
     hi('@lsp.type.lifetime',          { fg = c.lib_func })
 
-    -- LSP modifier overrides
-    hi('@lsp.mod.readonly',           { fg = c.number })
-    hi('@lsp.mod.static',             { fg = c.number })
+    -- LSP modifier overrides (grupo @lsp.mod.<modifier> sozinho, sem tipo)
+    -- Não força cor própria — só ajusta estilo (itálico/negrito), preservando
+    -- a cor do @lsp.type.* correspondente por baixo.
     hi('@lsp.mod.deprecated',         { fg = c.invalid_fg, bg = c.dep_bg })
     hi('@lsp.mod.abstract',           { italic = true })
+
+    -- ── 4b. LSP TYPEMOD COMPOSITE GROUPS (tipo + modificador combinados) ─────
+    -- O Neovim monta grupos @lsp.typemod.<tokenType>.<modifier> quando um
+    -- token tem modificadores (ex: um método "static" vira
+    -- @lsp.typemod.method.static). Esses grupos compostos têm prioridade
+    -- MAIOR que @lsp.type.<tokenType> sozinho, e por padrão o Neovim os
+    -- linka para o grupo genérico "@lsp" (sem cor) quando não há um grupo
+    -- explícito definido — isso fazia métodos/campos/propriedades static,
+    -- readonly, declaration etc. ficarem sem cor mesmo com @lsp.type.method
+    -- já mapeado corretamente. Replicamos aqui a cor do tipo base para cada
+    -- combinação comum, para que o modificador não apague a cor do tipo.
+    hi('@lsp.typemod.method.static',           { fg = c.func_name })
+    hi('@lsp.typemod.method.declaration',      { fg = c.func_name })
+    hi('@lsp.typemod.method.defaultLibrary',   { fg = c.lib_func })
+    hi('@lsp.typemod.function.static',         { fg = c.func_name })
+    hi('@lsp.typemod.function.declaration',    { fg = c.func_name })
+    hi('@lsp.typemod.function.defaultLibrary', { fg = c.lib_func })
+    hi('@lsp.typemod.class.declaration',       { fg = c.func_name, underline = true })
+    hi('@lsp.typemod.class.defaultLibrary',    { fg = c.lib_func, underline = true })
+    hi('@lsp.typemod.property.static',         { fg = c.variable })
+    hi('@lsp.typemod.property.readonly',       { fg = c.variable })
+    hi('@lsp.typemod.property.declaration',    { fg = c.variable })
+    hi('@lsp.typemod.field.static',            { fg = c.variable })
+    hi('@lsp.typemod.field.readonly',          { fg = c.variable })
+    hi('@lsp.typemod.field.declaration',       { fg = c.variable })
+    hi('@lsp.typemod.variable.static',         { fg = c.variable })
+    hi('@lsp.typemod.variable.readonly',       { fg = c.variable })
+    hi('@lsp.typemod.variable.declaration',    { fg = c.variable })
+    hi('@lsp.typemod.variable.defaultLibrary', { fg = c.lib_func })
+    hi('@lsp.typemod.parameter.declaration',   { fg = c.func_param, italic = true })
+    hi('@lsp.typemod.type.defaultLibrary',     { fg = c.storage_type, italic = true })
+    hi('@lsp.typemod.struct.defaultLibrary',   { fg = c.storage_type, italic = true })
+    hi('@lsp.typemod.interface.defaultLibrary',{ fg = c.storage_type, italic = true })
+    hi('@lsp.typemod.namespace.declaration',   { fg = c.storage_type })
+    hi('@lsp.typemod.enumMember.readonly',     { fg = c.number })
+    hi('@lsp.typemod.enumMember.static',       { fg = c.number })
+
+    -- Fallback final: qualquer combinação typemod não coberta explicitamente
+    -- acima cai aqui em vez de ficar sem cor. Sem fg definido, herda Normal
+    -- (sem cor) — então definimos ao menos a cor base de texto para não
+    -- ficar pior que isso, mas o ideal é que os casos comuns acima cubram
+    -- a grande maioria dos tokens reais.
+    hi('@lsp', { fg = c.fg })
 
     -- ── 5. DIAGNOSTICS ───────────────────────────────────────────────────────
 
@@ -673,7 +723,41 @@ function M.load()
     vim.g.terminal_color_13 = c.number
     vim.g.terminal_color_14 = c.lib_func
     vim.g.terminal_color_15 = c.caret
+
+    -- ── 9. RE-APPLY GUARD ─────────────────────────────────────────────────────
+    -- Some LSP servers (notably OmniSharp / csharp-ls for C#) register their
+    -- own semantic-token highlight groups *after* this colorscheme has already
+    -- run — either on LspAttach or on the first semantic-tokens refresh — and
+    -- those groups can silently win over ours if they are applied later in
+    -- the same buffer. Re-apply the LSP/treesitter-critical subset whenever
+    -- an LSP client attaches or semantic tokens refresh, so our palette
+    -- always has the last word.
+    local reapply_group = vim.api.nvim_create_augroup('SolarSootyReapply', { clear = true })
+
+    local function reapply_critical()
+        hi('Function',                    { fg = c.func_name })
+        hi('Delimiter',                   { fg = c.number })
+        hi('@function',                   { fg = c.func_name })
+        hi('@function.call',              { fg = c.func_name })
+        hi('@function.method',            { fg = c.func_name })
+        hi('@function.method.call',       { fg = c.func_name })
+        hi('@method',                     { fg = c.func_name })
+        hi('@method.call',                { fg = c.func_name })
+        hi('@punctuation.bracket',        { fg = c.number })
+        hi('@lsp.type.function',          { fg = c.func_name })
+        hi('@lsp.type.method',            { fg = c.func_name })
+        hi('@lsp.typemod.function.declaration',  { fg = c.func_name })
+        hi('@lsp.typemod.method.declaration',    { fg = c.func_name })
+        hi('@lsp.typemod.function.defaultLibrary',{ fg = c.lib_func })
+        hi('@lsp.typemod.method.defaultLibrary',  { fg = c.lib_func })
+    end
+
+    vim.api.nvim_create_autocmd({ 'LspAttach', 'ColorScheme' }, {
+        group = reapply_group,
+        callback = function()
+            vim.defer_fn(reapply_critical, 0)
+        end,
+    })
 end
 
 return M
-
