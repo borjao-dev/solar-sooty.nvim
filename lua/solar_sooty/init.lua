@@ -404,8 +404,18 @@ function M.load()
     hi('@lsp.typemod.function.static',         { fg = c.func_name })
     hi('@lsp.typemod.function.declaration',    { fg = c.func_name })
     hi('@lsp.typemod.function.defaultLibrary', { fg = c.lib_func })
+    -- class.declaration: você DECLARANDO a classe (public class Foo) → verde+underline (entity.name.class)
     hi('@lsp.typemod.class.declaration',       { fg = c.func_name, underline = true })
-    hi('@lsp.typemod.class.defaultLibrary',    { fg = c.lib_func, underline = true })
+    -- class.defaultLibrary: você USANDO um tipo vindo de biblioteca externa
+    -- (HttpClient, JsonSerializer, AuthenticationHeaderValue, etc.) → é um
+    -- TIPO como qualquer outro (support.class/storage.type) → cyan itálico,
+    -- igual @lsp.type.class sem modificador. NÃO deve levar underline —
+    -- underline é exclusivo da declaração da sua própria classe.
+    hi('@lsp.typemod.class.defaultLibrary',    { fg = c.storage_type, italic = true })
+    -- classe própria declarada como "static class Foo" → ainda é declaração
+    -- sua, mantém verde+underline
+    hi('@lsp.typemod.class.static',            { fg = c.func_name, underline = true })
+    hi('@lsp.typemod.class.abstract',          { fg = c.func_name, underline = true, italic = true })
     hi('@lsp.typemod.property.static',         { fg = c.variable })
     hi('@lsp.typemod.property.readonly',       { fg = c.variable })
     hi('@lsp.typemod.property.declaration',    { fg = c.variable })
@@ -761,3 +771,4 @@ function M.load()
 end
 
 return M
+
