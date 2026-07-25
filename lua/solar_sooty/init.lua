@@ -355,11 +355,23 @@ function M.load()
 
     -- ── 4. LSP SEMANTIC TOKENS ───────────────────────────────────────────────
 
-    hi('@lsp.type.class',             { fg = c.func_name, underline = true })
+    -- @lsp.type.class é o grupo BASE (sem modificador), aplicado sempre que
+    -- um token é classificado como "class" — inclusive toda vez que você usa
+    -- um tipo (HttpClient, JsonSerializer, GmailMessages como tipo genérico,
+    -- etc.), não só quando declara. No tmTheme original, isso corresponde a
+    -- support.class/storage.type = #66D9EF itálico — NÃO a entity.name.class
+    -- (#A6E22E sublinhado), que no tmTheme é exclusivo do NOME da classe no
+    -- ponto de declaração. Verde+underline só deve aparecer via o grupo
+    -- composto @lsp.typemod.class.declaration (mais abaixo), que tem
+    -- prioridade maior e sobrescreve este base especificamente na declaração.
+    hi('@lsp.type.class',             { fg = c.storage_type, italic = true })
     hi('@lsp.type.decorator',         { fg = c.func_name })
     hi('@lsp.type.enum',              { fg = c.storage_type, italic = true })
     hi('@lsp.type.enumMember',        { fg = c.number })
     hi('@lsp.type.event',             { fg = c.func_name })
+    -- @lsp.type.function/@lsp.type.method: entity.name.function no tmTheme
+    -- original é #A6E22E SEM itálico e SEM underline — mesma cor tanto para
+    -- declarar quanto para chamar um método/função próprios.
     hi('@lsp.type.function',          { fg = c.func_name })
     hi('@lsp.type.interface',         { fg = c.storage_type, italic = true })
     hi('@lsp.type.macro',             { fg = c.func_name })
@@ -398,24 +410,45 @@ function M.load()
     -- readonly, declaration etc. ficarem sem cor mesmo com @lsp.type.method
     -- já mapeado corretamente. Replicamos aqui a cor do tipo base para cada
     -- combinação comum, para que o modificador não apague a cor do tipo.
+    --
+    -- IMPORTANTE sobre combinação de highlights: quando dois grupos se
+    -- sobrepõem em prioridades diferentes, atributos NÃO mencionados no
+    -- grupo de prioridade mais alta podem herdar do grupo de prioridade mais
+    -- baixa por baixo. Como @lsp.type.class agora é itálico por padrão
+    -- (cyan, caso comum de USO de tipo), todo grupo composto de DECLARAÇÃO
+    -- (verde+underline, caso raro/especial) precisa zerar italic=false
+    -- explicitamente, ou herdaria o itálico do grupo base por baixo.
     hi('@lsp.typemod.method.static',           { fg = c.func_name })
     hi('@lsp.typemod.method.declaration',      { fg = c.func_name })
     hi('@lsp.typemod.method.defaultLibrary',   { fg = c.lib_func })
     hi('@lsp.typemod.function.static',         { fg = c.func_name })
     hi('@lsp.typemod.function.declaration',    { fg = c.func_name })
     hi('@lsp.typemod.function.defaultLibrary', { fg = c.lib_func })
-    -- class.declaration: você DECLARANDO a classe (public class Foo) → verde+underline (entity.name.class)
-    hi('@lsp.typemod.class.declaration',       { fg = c.func_name, underline = true })
-    -- class.defaultLibrary: você USANDO um tipo vindo de biblioteca externa
-    -- (HttpClient, JsonSerializer, AuthenticationHeaderValue, etc.) → é um
-    -- TIPO como qualquer outro (support.class/storage.type) → cyan itálico,
-    -- igual @lsp.type.class sem modificador. NÃO deve levar underline —
-    -- underline é exclusivo da declaração da sua própria classe.
-    hi('@lsp.typemod.class.defaultLibrary',    { fg = c.storage_type, italic = true })
-    -- classe própria declarada como "static class Foo" → ainda é declaração
-    -- sua, mantém verde+underline
-    hi('@lsp.typemod.class.static',            { fg = c.func_name, underline = true })
-    hi('@lsp.typemod.class.abstract',          { fg = c.func_name, underline = true, italic = true })
+
+    -- class/struct/interface/enum .declaration: você DECLARANDO o tipo
+    -- (public class Foo, struct Bar, interface Baz, enum Qux) →
+    -- entity.name.class no tmTheme original → verde + underline, SEM
+    -- itálico (zerado explicitamente para não herdar do base cyan-itálico).
+    hi('@lsp.typemod.class.declaration',       { fg = c.func_name, underline = true, italic = false })
+    hi('@lsp.typemod.struct.declaration',      { fg = c.func_name, underline = true, italic = false })
+    hi('@lsp.typemod.interface.declaration',   { fg = c.func_name, underline = true, italic = false })
+    hi('@lsp.typemod.enum.declaration',        { fg = c.func_name, underline = true, italic = false })
+    -- "static class Foo" / "abstract class Foo": ainda é declaração da sua
+    -- própria classe, mantém verde+underline sem itálico.
+    hi('@lsp.typemod.class.static',            { fg = c.func_name, underline = true, italic = false })
+    hi('@lsp.typemod.class.abstract',          { fg = c.func_name, underline = true, italic = false })
+
+    -- class/struct/interface .defaultLibrary: você USANDO um tipo vindo de
+    -- biblioteca externa (HttpClient, JsonSerializer, AuthenticationHeaderValue
+    -- etc.) → support.class/storage.type no tmTheme original → cyan itálico,
+    -- igual ao base @lsp.type.class. Mantido explícito aqui por robustez,
+    -- caso o servidor combine defaultLibrary com outro modificador que crie
+    -- prioridade diferente.
+    hi('@lsp.typemod.class.defaultLibrary',     { fg = c.storage_type, italic = true, underline = false })
+    hi('@lsp.typemod.struct.defaultLibrary',    { fg = c.storage_type, italic = true, underline = false })
+    hi('@lsp.typemod.interface.defaultLibrary', { fg = c.storage_type, italic = true, underline = false })
+    hi('@lsp.typemod.type.defaultLibrary',      { fg = c.storage_type, italic = true, underline = false })
+
     hi('@lsp.typemod.property.static',         { fg = c.variable })
     hi('@lsp.typemod.property.readonly',       { fg = c.variable })
     hi('@lsp.typemod.property.declaration',    { fg = c.variable })
@@ -427,9 +460,6 @@ function M.load()
     hi('@lsp.typemod.variable.declaration',    { fg = c.variable })
     hi('@lsp.typemod.variable.defaultLibrary', { fg = c.lib_func })
     hi('@lsp.typemod.parameter.declaration',   { fg = c.func_param, italic = true })
-    hi('@lsp.typemod.type.defaultLibrary',     { fg = c.storage_type, italic = true })
-    hi('@lsp.typemod.struct.defaultLibrary',   { fg = c.storage_type, italic = true })
-    hi('@lsp.typemod.interface.defaultLibrary',{ fg = c.storage_type, italic = true })
     hi('@lsp.typemod.namespace.declaration',   { fg = c.storage_type })
     hi('@lsp.typemod.enumMember.readonly',     { fg = c.number })
     hi('@lsp.typemod.enumMember.static',       { fg = c.number })
